@@ -95,30 +95,44 @@ class BoforaCipherApp:
             return self.manual_text_entry.get("1.0", tk.END).strip()
 
     def bofora_encrypt(self, text, key):
-        X = 256  # Size of the alphabet (ASCII)
+        # Размер алфавита (A-Z), всего 26 букв
+        alphabet_size = 26
         key_repeated = self.prepare_key(text, key)
         encrypted_text = []
 
-        for m, k in zip(text, key_repeated):
-            if m == '_':
+        for m, k in zip(text.upper(), key_repeated):
+            if m == ' ':
+                encrypted_text.append(' ')  # Пробел остаётся неизменным
+                continue
+            elif m == '_':  # Если символ подчеркивания, то также оставляем его неизменным
                 encrypted_text.append('_')
                 continue
-            c = (ord(m) - ord(k)) % X
-            encrypted_text.append(chr(c))
+            # Шифруем, используя позицию в алфавите
+            m_index = ord(m) - ord('A')
+            k_index = ord(k) - ord('A')
+            encrypted_char = chr((m_index - k_index) % alphabet_size + ord('A'))
+            encrypted_text.append(encrypted_char)
 
         return ''.join(encrypted_text)
 
     def bofora_decrypt(self, text, key):
-        X = 256  # Size of the alphabet (ASCII)
+        # Размер алфавита (A-Z), всего 26 букв
+        alphabet_size = 26
         key_repeated = self.prepare_key(text, key)
         decrypted_text = []
 
-        for c, k in zip(text, key_repeated):
-            if c == '_':
+        for c, k in zip(text.upper(), key_repeated):
+            if c == ' ':
+                decrypted_text.append(' ')  # Пробел остаётся неизменным
+                continue
+            elif c == '_':  # Если символ подчеркивания, то также оставляем его неизменным
                 decrypted_text.append('_')
                 continue
-            m = (ord(c) + ord(k)) % X
-            decrypted_text.append(chr(m))
+            # Дешифруем, используя позицию в алфавите
+            c_index = ord(c) - ord('A')
+            k_index = ord(k) - ord('A')
+            decrypted_char = chr((c_index + k_index) % alphabet_size + ord('A'))
+            decrypted_text.append(decrypted_char)
 
         return ''.join(decrypted_text)
 
@@ -127,10 +141,12 @@ class BoforaCipherApp:
         j = 0
 
         for i in range(len(text)):
-            if text[i] == '_':
-                key_repeated.append('_')
+            if text[i] == ' ':
+                key_repeated.append(' ')  # Пробелы остаются неизменными
+            elif text[i] == '_':
+                key_repeated.append('_')  # Символ подчеркивания остаётся неизменным
             else:
-                key_repeated.append(key[j % len(key)])
+                key_repeated.append(key[j % len(key)].upper())  # Приводим ключ к верхнему регистру
                 j += 1
 
         return ''.join(key_repeated)
